@@ -5,6 +5,7 @@
   :author "Barry Bridgens <barry@bridgens.me.uk>"
   :license  "Specify license here"
   :version "0.0.1"
-  :serial t options...)options...)
+  :serial t
+  :depends-on (#:cl-str)
   :components ((:file "package")
                (:file "microsim-assembler")))
