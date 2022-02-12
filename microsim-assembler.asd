@@ -6,6 +6,6 @@
   :license  "Specify license here"
   :version "0.0.1"
   :serial t
-  :depends-on (#:cl-str)
+  :depends-on (#:str)
   :components ((:file "package")
                (:file "microsim-assembler")))

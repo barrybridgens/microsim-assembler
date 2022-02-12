@@ -11,11 +11,24 @@
 
 (defun initialise ())
 
+(defun parse-hex (s)
+  (if (string= (str:substring 0 2 s) "0x")
+      (return-from parse-hex (parse-integer (str:substring 2 t s) :radix 16)))
+  (if (string= (str:substring 0 1 s) "$")
+      (return-from parse-hex (parse-integer (str:substring 1 t s) :radix 16))))
+
 (defun process-label (s)
   (format t "~a -> LABEL~%" s))
 
 (defun process-op-code (s)
   (format t "~a -> OP-CODE~%" s))
+
+(defun process-org (s)
+  (format t "~a -> ORG ~%" s)
+  (let ((target_addr (second(str:words s))))
+    (format t "     ----> ~a ~%" target_addr)
+    (setq *address* (parse-hex target_addr))
+    (format t "  Address is ~x  /  ~d ~%" *address* *address*)))
 
 (defun parse-asm-file ()
   (let ((in (open "/home/barry/software/projects/microsim-assembler/test.asm" :if-does-not-exist nil)))
@@ -31,6 +44,8 @@
 		 (format t "-> BLANK~%"))
 		((str:starts-with-p "#" line)
 		 (format t "-> COMMENT~%"))
+		((str:starts-with-p "ORG" line)
+		 (process-org line))
 		((str:ends-with-p ":" line)
 		 (process-label line))
 		((if (member (car (str:words line)) *valid-op-codes* :test #'string=) t nil)
