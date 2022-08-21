@@ -23,7 +23,20 @@
   (setq *labels* (cons (list s *address*) *labels*)))
 
 (defun process-op-code (s)
-  (format t "~a -> OP-CODE~%" s))
+  (format t "~a -> OP-CODE~%" s)
+  (let ((tokens (str:words s)))
+    (cond
+      ((str:starts-with-p "LDA_I" s)
+       (process-op-code-lda_i tokens))
+      ((str:starts-with-p "JMP" s)
+       (process-op-code-jmp tokens))))
+  )
+
+(defun process-op-code-lda_i (tokens)
+  (format t "LDAI ================ ~a~%" (second tokens)))
+
+(defun process-op-code-jmp (tokens)
+  (format t "JMP ================ ~a~%" (second tokens)))
 
 (defun process-org (s)
   (format t "~a -> ORG ~%" s)
