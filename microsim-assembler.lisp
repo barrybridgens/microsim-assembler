@@ -7,7 +7,7 @@
 
 (defparameter *line-cnt* 0)
 (defparameter *address* #x100)
-
+(defparameter *labels* ())
 
 (defun initialise ())
 
@@ -18,7 +18,9 @@
       (return-from parse-hex (parse-integer (str:substring 1 t s) :radix 16))))
 
 (defun process-label (s)
-  (format t "~a -> LABEL~%" s))
+  (format t "~a -> LABEL~%" s)
+  (setq s (str:remove-punctuation s))
+  (setq *labels* (cons (list s *address*) *labels*)))
 
 (defun process-op-code (s)
   (format t "~a -> OP-CODE~%" s))
