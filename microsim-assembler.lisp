@@ -8,6 +8,7 @@
 (defparameter *line-cnt* 0)
 (defparameter *address* #x100)
 (defparameter *labels* ())
+(defparameter *output* ())
 
 (defun initialise ())
 
@@ -20,7 +21,7 @@
 (defun process-label (s)
   (format t "~a -> LABEL~%" s)
   (setq s (str:remove-punctuation s))
-  (setq *labels* (cons (list s *address*) *labels*)))
+  (setq *labels* (cons (cons s *address*) *labels*)))
 
 (defun process-op-code (s)
   (format t "~a -> OP-CODE~%" s)
@@ -33,10 +34,16 @@
   )
 
 (defun process-op-code-lda_i (tokens)
-  (format t "LDAI ================ ~a~%" (second tokens)))
+  (format t "LDAI ================ ~a~%" (second tokens))
+  (setq *output* (append *output* '(1)))
+  (setq *output* (append *output* (list (parse-integer (second tokens))))))
 
 (defun process-op-code-jmp (tokens)
-  (format t "JMP ================ ~a~%" (second tokens)))
+  (format t "JMP ================ ~a~%" (second tokens))
+  (setq *output* (append *output* '(10)))
+  (let ((addr (cdr (assoc (second tokens) *labels* :test #'equalp))))
+    (setq *output* (append *output* (list (nth-value 0 (truncate 528 256)))))
+    (setq *output* (append *output* (list (nth-value 1 (truncate 528 256)))))))
 
 (defun process-org (s)
   (format t "~a -> ORG ~%" s)
