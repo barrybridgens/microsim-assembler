@@ -11,28 +11,33 @@
 (defparameter *output* ())
 
 (defun initialise ()
+  "Initialise parameters"
   (setq *line-cnt* 0)
   (setq *address* #x100)
   (setq *labels* ())
-  (setq  *output* ()))
+  (setq *output* ()))
 
 (defun parse-hex (s)
+  "Parse a hex number using 0x or $ prefix"
   (if (string= (str:substring 0 2 s) "0x")
       (return-from parse-hex (parse-integer (str:substring 2 t s) :radix 16)))
   (if (string= (str:substring 0 1 s) "$")
       (return-from parse-hex (parse-integer (str:substring 1 t s) :radix 16))))
 
 (defun prepend-and-inc-address(n)
+  "Return a list with the current address and supplied inpt then increment address"
   (let ((old-address *address*))
 	(setq *address* (+ *address* 1))
 	(return-from prepend-and-inc-address (list old-address n))))
 
 (defun process-label (s)
+  "Add the supplied label name and the current address to the labels environment"
   (format t "~a -> LABEL~%" s)
   (setq s (str:remove-punctuation s))
   (setq *labels* (cons (cons s *address*) *labels*)))
 
 (defun process-op-code (s)
+  "Dispatch to the appropriate op-code processing routine"
   (format t "~a -> OP-CODE~%" s)
   (let ((tokens (str:words s)))
     (cond
@@ -40,23 +45,40 @@
        (process-op-code-lda_i tokens))
       ((str:starts-with-p "LDA_M" s)
        (process-op-code-lda_m tokens))
+      ((str:starts-with-p "STA" s)
+       (process-op-code-sta tokens))
       ((str:starts-with-p "JMP" s)
        (process-op-code-jmp tokens))))
   )
 
 (defun process-op-code-lda_i (tokens)
+  "Process the LDA_I op-code and write addresses and data bytes to the output structure"
   (format t "LDA_I ================ ~a~%" (second tokens))
   (setq *output* (append *output* (prepend-and-inc-address '1)))
   (setq *output* (append *output* (prepend-and-inc-address (parse-integer (second tokens))))))
 
+
+;;;;; The routines below are all very similar - need to write a macro to generate the common parts!
+
+
 (defun process-op-code-lda_m (tokens)
+  "Process the LDA_M op-code and write addresses and data bytes to the output structure"
   (format t "LDA_M ================ ~a~%" (second tokens))
   (setq *output* (append *output* (prepend-and-inc-address '2)))
   (let ((addr (cdr (assoc (second tokens) *labels* :test #'equalp))))
     (setq *output* (append *output* (prepend-and-inc-address (nth-value 0 (truncate addr 256)))))
     (setq *output* (append *output* (prepend-and-inc-address (nth-value 1 (truncate addr 256)))))))
 
+(defun process-op-code-sta (tokens)
+  "Process the STA op-code and write addresses and data bytes to the output structure"
+  (format t "STA ================ ~a~%" (second tokens))
+  (setq *output* (append *output* (prepend-and-inc-address '3)))
+  (let ((addr (cdr (assoc (second tokens) *labels* :test #'equalp))))
+    (setq *output* (append *output* (prepend-and-inc-address (nth-value 0 (truncate addr 256)))))
+    (setq *output* (append *output* (prepend-and-inc-address (nth-value 1 (truncate addr 256)))))))
+
 (defun process-op-code-jmp (tokens)
+  "Process the JMP op-code and write addresses and data bytes to the output structure"
   (format t "JMP ================ ~a~%" (second tokens))
   (setq *output* (append *output* (prepend-and-inc-address '10)))
   (let ((addr (cdr (assoc (second tokens) *labels* :test #'equalp))))
@@ -64,6 +86,7 @@
     (setq *output* (append *output* (prepend-and-inc-address (nth-value 1 (truncate addr 256)))))))
 
 (defun process-org (s)
+  "Update the current address with the parameter from an ORG statement"
   (format t "~a -> ORG ~%" s)
   (let ((target_addr (second(str:words s))))
     (format t "     ----> ~a ~%" target_addr)
@@ -71,6 +94,7 @@
     (format t "  Address is ~x  /  ~d ~%" *address* *address*)))
 
 (defun parse-asm-file ()
+  "Parse the supplied ASM file"
   (initialise)
   (let ((in (open "/home/barry/software/projects/microsim-assembler/test.asm" :if-does-not-exist nil)))
   (when in
