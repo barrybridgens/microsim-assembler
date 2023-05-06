@@ -11,5 +11,7 @@ start:
 	ORG $220
 	
 	LDA_M	var1
+	INC
+	STA	var1
 	JMP	start
 	

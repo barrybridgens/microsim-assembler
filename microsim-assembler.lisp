@@ -3,7 +3,7 @@
 (in-package #:microsim-assembler)
 
 
-(defparameter *valid-op-codes* '("LDA_I" "LDA_M" "JMP"))
+(defparameter *valid-op-codes* '("LDA_I" "LDA_M" "JMP" "STA" "INC"))
 
 (defparameter *line-cnt* 0)
 (defparameter *address* #x100)
@@ -48,7 +48,9 @@
       ((str:starts-with-p "STA" s)
        (process-op-code-sta tokens))
       ((str:starts-with-p "JMP" s)
-       (process-op-code-jmp tokens))))
+       (process-op-code-jmp tokens))
+      ((str:starts-with-p "INC" s)
+       (process-op-code-inc tokens))))
   )
 
 (defun process-op-code-lda_i (tokens)
@@ -56,6 +58,11 @@
   (format t "LDA_I ================ ~a~%" (second tokens))
   (setq *output* (append *output* (prepend-and-inc-address '1)))
   (setq *output* (append *output* (prepend-and-inc-address (parse-integer (second tokens))))))
+
+(defun process-op-code-inc (tokens)
+  "Process the LDA_I op-code and write addresses and data bytes to the output structure"
+  (format t "INC ================")
+  (setq *output* (append *output* (prepend-and-inc-address '6))))
 
 
 ;;;;; The routines below are all very similar - need to write a macro to generate the common parts!
