@@ -12,6 +12,8 @@ start:
 	
 	LDA_M	var1
 	INC
+	DEC
+	OUT
 	STA	var1
 	JMP	start
 	

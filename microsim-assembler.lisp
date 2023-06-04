@@ -3,7 +3,7 @@
 (in-package #:microsim-assembler)
 
 
-(defparameter *valid-op-codes* '("LDA_I" "LDA_M" "JMP" "STA" "INC"))
+(defparameter *valid-op-codes* '("LDA_I" "LDA_M" "JMP" "STA" "INC" "DEC" "OUT"))
 
 (defparameter *line-cnt* 0)
 (defparameter *address* #x100)
@@ -50,7 +50,12 @@
       ((str:starts-with-p "JMP" s)
        (process-op-code-jmp tokens))
       ((str:starts-with-p "INC" s)
-       (process-op-code-inc tokens))))
+       (process-op-code-inc tokens))
+      ((str:starts-with-p "DEC" s)
+       (process-op-code-dec tokens))
+      ((str:starts-with-p "OUT" s)
+       (process-op-code-out tokens))
+      ))
   )
 
 (defun process-op-code-lda_i (tokens)
@@ -60,9 +65,19 @@
   (setq *output* (append *output* (prepend-and-inc-address (parse-integer (second tokens))))))
 
 (defun process-op-code-inc (tokens)
-  "Process the LDA_I op-code and write addresses and data bytes to the output structure"
-  (format t "INC ================")
+  "Process the INC op-code and write addresses and data bytes to the output structure"
+  (format t "DEC ================ ~%")
   (setq *output* (append *output* (prepend-and-inc-address '6))))
+
+(defun process-op-code-dec (tokens)
+  "Process the DEC op-code and write addresses and data bytes to the output structure"
+  (format t "DEC ================ ~%")
+  (setq *output* (append *output* (prepend-and-inc-address '7))))
+
+(defun process-op-code-out (tokens)
+  "Process the OUT op-code and write addresses and data bytes to the output structure"
+  (format t "OUT ================ ~%")
+  (setq *output* (append *output* (prepend-and-inc-address '9))))
 
 
 ;;;;; The routines below are all very similar - need to write a macro to generate the common parts!
